@@ -16,13 +16,16 @@ export default function Navbar() {
             src="/logo.png"
             alt="CodeMatrix Logo"
             width={70}
-            height={70}
+            height={58}
             className="rounded-md"
           />
         </div>
 
         {/* Desktop Menu */}
         <div className="hidden md:flex gap-8 text-sm font-medium text-white/80">
+        <Link href="/" className="hover:text-white transition-colors">
+            Home
+          </Link>
           <Link href="/" className="hover:text-white transition-colors">
             Your Team
           </Link>
@@ -34,22 +37,16 @@ export default function Navbar() {
           </Link>
           <Link href="/pricing" className="hover:text-white transition-colors">
             Pricing
-          </Link>
+        </Link>
         </div>
 
         {/* Right side - Auth buttons */}
         <div className="hidden md:flex items-center gap-4">
           <Link
-            href="/login"
-            className="text-white/80 hover:text-white text-sm font-medium transition-colors"
-          >
-            Log In
-          </Link>
-          <Link
             href="/signup"
-            className="bg-[#6b21a8] hover:bg-[#7c3aed] text-white px-5 py-2 rounded-full text-sm font-medium transition-all duration-300"
+            className="bg-[#0066BB] hover:bg-[#0077CC] text-white px-5 py-2 rounded-full text-sm font-medium transition-all duration-300"
           >
-            Join Now
+            Get Started
           </Link>
         </div>
 
@@ -95,7 +92,7 @@ export default function Navbar() {
 
       {/* Mobile Menu */}
       {menuOpen && (
-        <div className="md:hidden bg-[#1a0a2e]/95 backdrop-blur-md px-6 pb-6 flex flex-col gap-4 text-sm text-white/80 border-t border-white/10">
+        <div className="md:hidden bg-[#001a33]/95 backdrop-blur-md px-6 pb-6 flex flex-col gap-4 text-sm text-white/80 border-t border-white/10">
           <Link href="/" className="py-2 hover:text-white">
             Your Team
           </Link>
@@ -114,7 +111,7 @@ export default function Navbar() {
             </Link>
             <Link
               href="/signup"
-              className="bg-[#6b21a8] hover:bg-[#7c3aed] text-white px-5 py-2.5 rounded-full text-sm font-medium text-center transition-all"
+              className="bg-[#0066BB] hover:bg-[#0077CC] text-white px-5 py-2.5 rounded-full text-sm font-medium text-center transition-all"
             >
               Join Now
             </Link>
