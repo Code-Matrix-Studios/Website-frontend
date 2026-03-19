@@ -1,159 +1,275 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
+import { useLenis } from "../components/lenisProvider";
 
-type AnimationType = "fade-up" | "fade-down" | "fade-left" | "fade-right" | "zoom-in" | "zoom-out" | "flip-up" | "flip-left";
-
-interface UseScrollAnimationOptions {
-  threshold?: number;
-  rootMargin?: string;
-  triggerOnce?: boolean;
-}
-
-export function useScrollAnimation(options: UseScrollAnimationOptions = {}) {
-  const { threshold = 0.1, rootMargin = "0px", triggerOnce = true } = options;
-  const ref = useRef<HTMLDivElement>(null);
-  const [isVisible, setIsVisible] = useState(false);
+// Hook for scroll-progress-based animations
+export function useScrollProgress() {
+  const [progress, setProgress] = useState(0);
+  const [velocity, setVelocity] = useState(0);
+  const [direction, setDirection] = useState<"up" | "down">("down");
+  const { lenis } = useLenis();
 
   useEffect(() => {
-    const element = ref.current;
-    if (!element) return;
+    if (!lenis) return;
 
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setIsVisible(true);
-          if (triggerOnce) {
-            observer.unobserve(element);
-          }
-        } else if (!triggerOnce) {
-          setIsVisible(false);
-        }
-      },
-      { threshold, rootMargin }
-    );
-
-    observer.observe(element);
-
-    return () => {
-      observer.unobserve(element);
-    };
-  }, [threshold, rootMargin, triggerOnce]);
-
-  return { ref, isVisible };
-}
-
-interface AnimatedSectionProps {
-  children: React.ReactNode;
-  animation?: AnimationType;
-  delay?: number;
-  duration?: number;
-  className?: string;
-  threshold?: number;
-  staggerChildren?: boolean;
-  staggerDelay?: number;
-}
-
-export function AnimatedSection({
-  children,
-  animation = "fade-up",
-  delay = 0,
-  duration = 0.8,
-  className = "",
-  threshold = 0.1,
-  staggerChildren = false,
-  staggerDelay = 0.1,
-}: AnimatedSectionProps) {
-  const { ref, isVisible } = useScrollAnimation({ threshold });
-
-  const getAnimationStyles = () => {
-    const baseStyles = {
-      transition: `all ${duration}s cubic-bezier(0.16, 1, 0.3, 1) ${delay}s`,
+    const handleScroll = () => {
+      const currentProgress = lenis.progress;
+      const currentVelocity = lenis.velocity;
+      const currentDirection = lenis.direction === 1 ? "down" : "up";
+      
+      setProgress(currentProgress);
+      setVelocity(currentVelocity);
+      setDirection(currentDirection);
     };
 
-    const hiddenStyles: Record<AnimationType, React.CSSProperties> = {
-      "fade-up": { opacity: 0, transform: "translateY(60px)" },
-      "fade-down": { opacity: 0, transform: "translateY(-60px)" },
-      "fade-left": { opacity: 0, transform: "translateX(60px)" },
-      "fade-right": { opacity: 0, transform: "translateX(-60px)" },
-      "zoom-in": { opacity: 0, transform: "scale(0.9)" },
-      "zoom-out": { opacity: 0, transform: "scale(1.1)" },
-      "flip-up": { opacity: 0, transform: "perspective(1000px) rotateX(20deg) translateY(40px)" },
-      "flip-left": { opacity: 0, transform: "perspective(1000px) rotateY(20deg) translateX(40px)" },
-    };
+    lenis.on("scroll", handleScroll);
+    return () => lenis.off("scroll", handleScroll);
+  }, [lenis]);
 
-    const visibleStyles: React.CSSProperties = {
-      opacity: 1,
-      transform: "translateY(0) translateX(0) scale(1) rotateX(0deg) rotateY(0deg)",
-    };
-
-    return {
-      ...baseStyles,
-      ...(isVisible ? visibleStyles : hiddenStyles[animation]),
-    };
-  };
-
-  return (
-    <div ref={ref} className={className} style={getAnimationStyles()}>
-      {staggerChildren ? (
-        <StaggeredChildren isVisible={isVisible} staggerDelay={staggerDelay} duration={duration}>
-          {children}
-        </StaggeredChildren>
-      ) : (
-        children
-      )}
-    </div>
-  );
+  return { progress, velocity, direction };
 }
 
-interface StaggeredChildrenProps {
-  children: React.ReactNode;
-  isVisible: boolean;
-  staggerDelay: number;
-  duration: number;
-}
-
-function StaggeredChildren({ children, isVisible, staggerDelay, duration }: StaggeredChildrenProps) {
-  const childArray = Array.isArray(children) ? children : [children];
-
-  return (
-    <>
-      {childArray.map((child, index) => (
-        <div
-          key={index}
-          style={{
-            opacity: isVisible ? 1 : 0,
-            transform: isVisible ? "translateY(0)" : "translateY(30px)",
-            transition: `all ${duration}s cubic-bezier(0.16, 1, 0.3, 1) ${index * staggerDelay}s`,
-          }}
-        >
-          {child}
-        </div>
-      ))}
-    </>
-  );
-}
-
-// Parallax scroll effect hook
-export function useParallax(speed: number = 0.5) {
+// Hook for element-specific scroll progress (0-1 as element enters and leaves viewport)
+export function useElementScrollProgress(offset: number = 0) {
   const ref = useRef<HTMLDivElement>(null);
-  const [offset, setOffset] = useState(0);
+  const [progress, setProgress] = useState(0);
+  const { lenis } = useLenis();
 
   useEffect(() => {
+    if (!lenis || !ref.current) return;
+
     const handleScroll = () => {
       if (!ref.current) return;
+      
       const rect = ref.current.getBoundingClientRect();
-      const scrolled = window.scrollY;
-      const elementTop = rect.top + scrolled;
-      const relativeScroll = scrolled - elementTop + window.innerHeight;
-      setOffset(relativeScroll * speed);
+      const windowHeight = window.innerHeight;
+      
+      // Calculate progress: 0 when element enters viewport, 1 when it leaves
+      const elementTop = rect.top - windowHeight;
+      const elementBottom = rect.bottom;
+      const totalDistance = windowHeight + rect.height;
+      
+      const currentProgress = Math.max(0, Math.min(1, -elementTop / totalDistance));
+      setProgress(currentProgress + offset);
     };
 
-    window.addEventListener("scroll", handleScroll, { passive: true });
+    lenis.on("scroll", handleScroll);
+    handleScroll(); // Initial call
+    
+    return () => lenis.off("scroll", handleScroll);
+  }, [lenis, offset]);
+
+  return { ref, progress };
+}
+
+// Parallax effect with Lenis
+export function useLenisParallax(speed: number = 0.3) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [transform, setTransform] = useState(0);
+  const { lenis } = useLenis();
+
+  useEffect(() => {
+    if (!lenis || !ref.current) return;
+
+    const handleScroll = () => {
+      if (!ref.current) return;
+      
+      const rect = ref.current.getBoundingClientRect();
+      const windowHeight = window.innerHeight;
+      const elementCenter = rect.top + rect.height / 2;
+      const viewportCenter = windowHeight / 2;
+      const distance = elementCenter - viewportCenter;
+      
+      setTransform(distance * speed);
+    };
+
+    lenis.on("scroll", handleScroll);
     handleScroll();
+    
+    return () => lenis.off("scroll", handleScroll);
+  }, [lenis, speed]);
 
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, [speed]);
+  return { ref, transform };
+}
 
-  return { ref, offset };
+// Velocity-based skew effect
+export function useVelocitySkew(intensity: number = 2) {
+  const [skew, setSkew] = useState(0);
+  const { lenis } = useLenis();
+  const targetSkew = useRef(0);
+
+  useEffect(() => {
+    if (!lenis) return;
+
+    const handleScroll = () => {
+      targetSkew.current = lenis.velocity * intensity;
+    };
+
+    // Smooth interpolation
+    const animate = () => {
+      setSkew(prev => prev + (targetSkew.current - prev) * 0.1);
+      requestAnimationFrame(animate);
+    };
+
+    lenis.on("scroll", handleScroll);
+    const animationFrame = requestAnimationFrame(animate);
+    
+    return () => {
+      lenis.off("scroll", handleScroll);
+      cancelAnimationFrame(animationFrame);
+    };
+  }, [lenis, intensity]);
+
+  return skew;
+}
+
+// Horizontal scroll section hook
+export function useHorizontalScroll() {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [translateX, setTranslateX] = useState(0);
+  const { lenis } = useLenis();
+
+  useEffect(() => {
+    if (!lenis || !containerRef.current || !scrollRef.current) return;
+
+    const handleScroll = () => {
+      if (!containerRef.current || !scrollRef.current) return;
+
+      const containerRect = containerRef.current.getBoundingClientRect();
+      const scrollWidth = scrollRef.current.scrollWidth - window.innerWidth;
+      const containerHeight = containerRef.current.offsetHeight - window.innerHeight;
+      
+      // Calculate how far into the sticky section we are
+      const scrollProgress = Math.max(0, Math.min(1, -containerRect.top / containerHeight));
+      
+      setTranslateX(-scrollProgress * scrollWidth);
+    };
+
+    lenis.on("scroll", handleScroll);
+    return () => lenis.off("scroll", handleScroll);
+  }, [lenis]);
+
+  return { containerRef, scrollRef, translateX };
+}
+
+// Scale on scroll hook
+export function useScrollScale(minScale: number = 0.8, maxScale: number = 1) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [scale, setScale] = useState(minScale);
+  const { lenis } = useLenis();
+
+  useEffect(() => {
+    if (!lenis || !ref.current) return;
+
+    const handleScroll = () => {
+      if (!ref.current) return;
+
+      const rect = ref.current.getBoundingClientRect();
+      const windowHeight = window.innerHeight;
+      const elementCenter = rect.top + rect.height / 2;
+      
+      // Scale from minScale to maxScale as element approaches center
+      const distanceFromCenter = Math.abs(elementCenter - windowHeight / 2);
+      const maxDistance = windowHeight / 2;
+      const progress = 1 - Math.min(1, distanceFromCenter / maxDistance);
+      
+      setScale(minScale + progress * (maxScale - minScale));
+    };
+
+    lenis.on("scroll", handleScroll);
+    handleScroll();
+    
+    return () => lenis.off("scroll", handleScroll);
+  }, [lenis, minScale, maxScale]);
+
+  return { ref, scale };
+}
+
+// Rotate on scroll hook
+export function useScrollRotate(maxRotation: number = 10) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [rotation, setRotation] = useState(0);
+  const { lenis } = useLenis();
+
+  useEffect(() => {
+    if (!lenis || !ref.current) return;
+
+    const handleScroll = () => {
+      if (!ref.current) return;
+
+      const rect = ref.current.getBoundingClientRect();
+      const windowHeight = window.innerHeight;
+      const progress = (windowHeight - rect.top) / (windowHeight + rect.height);
+      
+      setRotation((progress - 0.5) * maxRotation * 2);
+    };
+
+    lenis.on("scroll", handleScroll);
+    handleScroll();
+    
+    return () => lenis.off("scroll", handleScroll);
+  }, [lenis, maxRotation]);
+
+  return { ref, rotation };
+}
+
+// Opacity fade based on scroll position
+export function useScrollOpacity() {
+  const ref = useRef<HTMLDivElement>(null);
+  const [opacity, setOpacity] = useState(0);
+  const { lenis } = useLenis();
+
+  useEffect(() => {
+    if (!lenis || !ref.current) return;
+
+    const handleScroll = () => {
+      if (!ref.current) return;
+
+      const rect = ref.current.getBoundingClientRect();
+      const windowHeight = window.innerHeight;
+      
+      // Fade in as element enters, stay visible in middle, fade out as it leaves
+      const enterProgress = Math.max(0, Math.min(1, (windowHeight - rect.top) / (windowHeight * 0.3)));
+      const exitProgress = Math.max(0, Math.min(1, rect.bottom / (windowHeight * 0.3)));
+      
+      setOpacity(Math.min(enterProgress, exitProgress));
+    };
+
+    lenis.on("scroll", handleScroll);
+    handleScroll();
+    
+    return () => lenis.off("scroll", handleScroll);
+  }, [lenis]);
+
+  return { ref, opacity };
+}
+
+// Text reveal on scroll
+export function useTextReveal() {
+  const ref = useRef<HTMLDivElement>(null);
+  const [clipPath, setClipPath] = useState("inset(0 100% 0 0)");
+  const { lenis } = useLenis();
+
+  useEffect(() => {
+    if (!lenis || !ref.current) return;
+
+    const handleScroll = () => {
+      if (!ref.current) return;
+
+      const rect = ref.current.getBoundingClientRect();
+      const windowHeight = window.innerHeight;
+      const progress = Math.max(0, Math.min(1, (windowHeight - rect.top) / (windowHeight * 0.5)));
+      
+      setClipPath(`inset(0 ${(1 - progress) * 100}% 0 0)`);
+    };
+
+    lenis.on("scroll", handleScroll);
+    handleScroll();
+    
+    return () => lenis.off("scroll", handleScroll);
+  }, [lenis]);
+
+  return { ref, clipPath };
 }
