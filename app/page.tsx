@@ -164,7 +164,7 @@ export default function Home() {
         <div className="max-w-6xl mx-auto">
           <ProgressReveal>
             <h2 className="text-4xl md:text-5xl font-bold text-white mb-8">
-              About <span className="text-[#0077CC]">Us</span>
+              About <span className="text-[#0077CC]">CodeMatrix Studios</span>
             </h2>
           </ProgressReveal>
           
@@ -324,49 +324,7 @@ export default function Home() {
       </section>
 
       {/* Footer */}
-      <footer className="relative py-16 px-6 border-t border-[#1a2a3a]">
-        <div className="max-w-6xl mx-auto">
-          <ProgressReveal>
-            <div className="grid md:grid-cols-4 gap-12 mb-12">
-              <div>
-                <h3 className="text-white font-semibold text-lg mb-4">CodeMatrix</h3>
-                <p className="text-[#6b7d8a] text-sm leading-relaxed">
-                  Building modern digital experiences for businesses worldwide.
-                </p>
-              </div>
-              <div>
-                <h4 className="text-white font-medium mb-4">Company</h4>
-                <ul className="space-y-2 text-[#6b7d8a] text-sm">
-                  <li className="hover:text-[#0077CC] cursor-pointer transition-colors">About</li>
-                  <li className="hover:text-[#0077CC] cursor-pointer transition-colors">Careers</li>
-                  <li className="hover:text-[#0077CC] cursor-pointer transition-colors">Blog</li>
-                  <li className="hover:text-[#0077CC] cursor-pointer transition-colors">Press</li>
-                </ul>
-              </div>
-              <div>
-                <h4 className="text-white font-medium mb-4">Services</h4>
-                <ul className="space-y-2 text-[#6b7d8a] text-sm">
-                  <li className="hover:text-[#0077CC] cursor-pointer transition-colors">Web Development</li>
-                  <li className="hover:text-[#0077CC] cursor-pointer transition-colors">Mobile Apps</li>
-                  <li className="hover:text-[#0077CC] cursor-pointer transition-colors">Cloud Solutions</li>
-                  <li className="hover:text-[#0077CC] cursor-pointer transition-colors">Consulting</li>
-                </ul>
-              </div>
-              <div>
-                <h4 className="text-white font-medium mb-4">Contact</h4>
-                <ul className="space-y-2 text-[#6b7d8a] text-sm">
-                  <li>hello@codematrix.com</li>
-                  <li>+1 (555) 123-4567</li>
-                  <li>San Francisco, CA</li>
-                </ul>
-              </div>
-            </div>
-            <div className="pt-8 border-t border-[#1a2a3a] text-center text-[#6b7d8a] text-sm">
-              &copy; 2026 CodeMatrix. All rights reserved.
-            </div>
-          </ProgressReveal>
-        </div>
-      </footer>
+      
 
       <style jsx>{`
         @keyframes bounce {
