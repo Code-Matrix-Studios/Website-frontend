@@ -58,7 +58,7 @@ export default function Footer() {
         </div>
 
         {/* Bottom */}
-        <div className="pt-8 border-t border-[#1a2a3a] text-center text-[#6b7d8a] text-sm">
+        <div className="pt-8 border-t border-[#92a3b5] text-center text-[#6b7d8a] text-sm">
           &copy; 2026 CodeMatrix. All rights reserved.
         </div>
 

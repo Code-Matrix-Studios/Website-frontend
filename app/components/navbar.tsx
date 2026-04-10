@@ -47,16 +47,16 @@ export default function Navbar() {
             <div
               className="w-9 h-9 rounded-xl flex items-center justify-center transition-all duration-300 group-hover:scale-105"
               style={{
-                background: "linear-gradient(135deg, rgba(26,171,255,0.15), rgba(0,212,255,0.08))",
-                border: "1px solid rgba(26,171,255,0.25)",
-                boxShadow: "0 0 12px rgba(26,171,255,0.1)",
+                // background: "linear-gradient(135deg, rgba(26,171,255,0.15), rgba(0,212,255,0.08))",
+                // // border: "1px solid rgba(26,171,255,0.25)",
+                // boxShadow: "0 0 12px rgba(26,171,255,0.1)",
               }}
             >
               <Image
                 src="/logo.png"
                 alt="CodeMatrix Logo"
-                width={64}
-                height={54}
+                width={104}
+                height={74}
                 className="rounded-sm object-contain"
               />
             </div>
@@ -69,7 +69,6 @@ export default function Navbar() {
                 backgroundClip: "text",
               }}
             >
-              CodeMatrix
             </span>
           </Link>
 
