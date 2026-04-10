@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import Navbar from "../components/navbar";
+import Navbar from "./components/navbar";
 
 /* ─────────────────────────────────────────
    Shared design tokens (mirrors page.tsx)
