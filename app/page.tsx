@@ -1,3 +1,4 @@
+/* eslint-disable react/no-children-prop */
 "use client";
 
 import Navbar from "./components/navbar";
@@ -612,10 +613,10 @@ export default function Home() {
 
             {/* Left: looping brand video */}
             <ProgressReveal>
-              <GlassCard className="overflow-hidden p-0 h-full min-h-[420px]">
+              <GlassCard className="overflow-hidden p-0 pt-0 h-full min-h-[420px]">
                 <video
                   src="./work.mp4"
-                  className="w-full h-full object-cover rounded-2xl"
+                  className="w-full pt-20 pb-10 h-full object-cover rounded-2xl"
                   autoPlay muted loop playsInline
                 />
               </GlassCard>
@@ -665,7 +666,7 @@ export default function Home() {
                 <h2 className="text-4xl md:text-6xl font-black text-white mb-6 tracking-tighter leading-none">
                   Why Choose<br />
                   <span style={{ background: "linear-gradient(135deg,#1AABFF,#00D4FF)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
-                    CodeMatrix
+                    CodeMatrix Studio
                   </span>
                 </h2>
                 <p className="text-white/45 text-base leading-relaxed mb-10">
